@@ -15,11 +15,14 @@ jobs:
           mkdir -p ~/.local/share/godot/export_templates
           cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
           keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore /tmp/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+          JH=$(dirname $(dirname $(readlink -f $(which javac))))
+          echo "Java: $JH"
           mkdir -p ~/.config/godot
           F=~/.config/godot/editor_settings-4.tres
           echo '[gd_resource type="EditorSettings" format=3]' > $F
           echo '[resource]' >> $F
           echo 'export/android/android_sdk_path = "/usr/lib/android-sdk"' >> $F
+          echo "export/android/java_sdk_path = \"$JH\"" >> $F
           echo 'export/android/debug_keystore = "/tmp/debug.keystore"' >> $F
           echo 'export/android/debug_keystore_user = "androiddebugkey"' >> $F
           echo 'export/android/debug_keystore_pass = "android"' >> $F
