@@ -27,6 +27,30 @@ jobs:
         run: |
           D=$(dirname $(find unz -name project.godot | head -1))
           mkdir -p out
+          if [ ! -f "$D/export_presets.cfg" ]; then
+          cat > "$D/export_presets.cfg" <<'EOF'
+          [preset.0]
+          name="Android"
+          platform="Android"
+          runnable=true
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path=""
+
+          [preset.0.options]
+          gradle_build/use_gradle_build=false
+          architectures/armeabi-v7a=false
+          architectures/arm64-v8a=true
+          architectures/x86=false
+          architectures/x86_64=false
+          version/code=1
+          version/name="1.0"
+          package/unique_name="com.kls.game"
+          package/signed=true
+          permissions/internet=true
+          EOF
+          fi
           godot --headless --path "$D" --export-debug "Android" $GITHUB_WORKSPACE/out/game.apk
       - uses: actions/upload-artifact@v4
         with:
