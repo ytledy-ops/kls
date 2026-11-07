@@ -1,0 +1,34 @@
+name: Build APK
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip
+        run: unzip -o *.zip -d unz
+      - name: Setup
+        run: |
+          mkdir -p ~/.local/share/godot/export_templates
+          cp -r /root/.local/share/godot/export_templates/* ~/.local/share/godot/export_templates/ || true
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android -keystore /tmp/debug.keystore -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999
+          mkdir -p ~/.config/godot
+          F=~/.config/godot/editor_settings-4.tres
+          echo '[gd_resource type="EditorSettings" format=3]' > $F
+          echo '[resource]' >> $F
+          echo 'export/android/android_sdk_path = "/usr/lib/android-sdk"' >> $F
+          echo 'export/android/debug_keystore = "/tmp/debug.keystore"' >> $F
+          echo 'export/android/debug_keystore_user = "androiddebugkey"' >> $F
+          echo 'export/android/debug_keystore_pass = "android"' >> $F
+      - name: Export
+        run: |
+          D=$(dirname $(find unz -name project.godot | head -1))
+          mkdir -p out
+          godot --headless --path "$D" --export-debug "Android" $GITHUB_WORKSPACE/out/game.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: out/game.apk
